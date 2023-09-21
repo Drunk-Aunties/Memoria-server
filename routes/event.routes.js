@@ -10,17 +10,13 @@ router.post("/events", fileUploader.single("imageUrl"), (req, res, next) => {
     const { title, content } = req.body;
 
     const newEvent = {
-        name,
-        description,
+        title,
+        content,
         members: [],
-        community,
-        date,
-        comments,
-        imageUrl,
     };
 
     Event.create(newEvent)
-        .then((response) => res.json({ response, fileUrl: req.file.path }))
+        .then((response) => res.json(response))
         .catch((err) => {
             console.log("Error creating new event...", err);
             res.status(500).json({
