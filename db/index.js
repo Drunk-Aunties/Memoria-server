@@ -6,14 +6,14 @@ const mongoose = require("mongoose");
 // If no env has been set, we dynamically set it to whatever the folder name was upon the creation of the app
 
 const MONGO_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/my-project-server";
+    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/my-project-server";
 
 mongoose
-  .connect(MONGO_URI)
-  .then((x) => {
-    const dbName = x.connections[0].name;
-    console.log(`Connected to Mongo! Database name: "${dbName}"`);
-  })
-  .catch((err) => {
-    console.error("Error connecting to mongo: ", err);
-  });
+    .connect(MONGO_URI)
+    .then((x) => {
+        const dbName = x.connections[0].name;
+        console.log(`Connected to Mongo! Database name: "${dbName}"`);
+    })
+    .catch((err) => {
+        console.error("Error connecting to mongo: ", err);
+    });
