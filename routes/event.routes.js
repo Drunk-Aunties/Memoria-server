@@ -6,13 +6,14 @@ const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
 
 //  POST /api/events  -  Creates a new event
-router.post("/events", fileUploader.single("imageUrl"), (req, res, next) => {
-    const { title, content } = req.body;
+router.post("/events", (req, res, next) => {
+    const { title, content, imageUrl } = req.body;
 
     const newEvent = {
         title,
         content,
         members: [],
+        imageUrl,
     };
 
     Event.create(newEvent)
@@ -113,6 +114,20 @@ router.delete("/events/:eventId", (req, res, next) => {
                 error: err,
             });
         });
+});
+// POST "/api/upload" => Route that receives the image, sends it to Cloudinary via the fileUploader and returns the image URL
+router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
+    // console.log("file is: ", req.file)
+
+    if (!req.file) {
+        next(new Error("No file uploaded!"));
+        return;
+    }
+
+    // Get the URL of the uploaded file and send it as a response.
+    // 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
+
+    res.json({ fileUrl: req.file.path });
 });
 
 module.exports = router;
