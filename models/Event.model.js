@@ -12,7 +12,7 @@ const eventSchema = new Schema(
             type: String,
         },
         members: [{ type: Schema.Types.ObjectId, ref: "User" }],
-        community: { type: Schema.Types.ObjectId, ref: "Group" },
+        groupId: { type: Schema.Types.ObjectId, ref: "Group" },
         date: String,
         comments: [String],
     },

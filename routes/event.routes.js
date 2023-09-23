@@ -7,13 +7,14 @@ const Event = require("../models/Event.model");
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", (req, res, next) => {
-    const { title, content, imageUrl } = req.body;
+    const { title, content, imageUrl,groupId } = req.body;
 
     const newEvent = {
         title,
         content,
         members: [],
         imageUrl,
+        groupId,
     };
 
     Event.create(newEvent)
@@ -128,6 +129,19 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
     // 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
 
     res.json({ fileUrl: req.file.path });
+});
+
+// GET /api/groups/:groupsId/events -  Retrieves all of the events
+router.get("/groups/:groupId/events", (req, res, next) => {
+    Event.find({groupId: req.params.groupId})
+        .then((allEvents) => res.json(allEvents))
+        .catch((err) => {
+            console.log("Error getting list of events...", err);
+            res.status(500).json({
+                message: "Error getting list of events",
+                error: err,
+            });
+        });
 });
 
 module.exports = router;
