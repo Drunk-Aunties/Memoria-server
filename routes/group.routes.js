@@ -4,6 +4,9 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 const fileUploader = require("../config/cloudinary.config");
 const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
+const { isGroupMember } = require("../middleware/isGroupMember");
+
+
 
 //  POST /api/gropus  -  Creates a new group
 router.post("/groups", fileUploader.single("imageUrl"), (req, res, next) => {
@@ -42,19 +45,30 @@ router.get("/groups", (req, res, next) => {
 });
 
 //  GET /api/groups/:groupId -  Retrieves a specific group by id
-router.get("/groups/:groupId", (req, res, next) => {
+router.get("/groups/:groupId", isAuthenticated, (req, res, next) => {
+    //console.log(req.payload);
     const { groupId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(groupId)) {
         res.status(400).json({ message: "Specified id is not valid" });
         return;
+        
     }
 
     // Each Group document has a `tasks` array holding `_id`s of Task documents
     // We use .populate() method to get swap the `_id`s for the actual Task documents
     Group.findById(groupId)
         .populate("members")
-        .then((group) => res.json(group))
+        .then((group) => {
+            //console.log(group.members);
+            console.log(group.members.find((element) => element.email === req.payload.email))
+            if (group.members.find((element) => element.email === req.payload.email))
+            {res.json(group)}
+            else {res.status(401).json({
+                message: "You are not a member of this group",
+            });}
+        })
+
         .catch((err) => {
             console.log("...", err);
             res.status(500).json({

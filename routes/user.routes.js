@@ -6,9 +6,7 @@ const User = require("../models/User.model");
 
 // GET /api/user -  Retrieves a specific user 
 router.get("/user/:useremail", async (req, res, next) =>  {
-    console.log(req.params.useremail);
     let result = await User.findOne({email: req.params.useremail});
-    console.log(result);
     res.json(result)
 });
 
