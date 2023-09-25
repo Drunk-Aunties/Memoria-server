@@ -20,7 +20,10 @@ const userSchema = new Schema(
         },
         lastname: String,
         birthdate: String,
-        community: { type: Schema.Types.ObjectId, ref: "Group" },
+        groupId: { type: Schema.Types.ObjectId, ref: "Group" },
+        imageUrl: {
+            type: String,
+        },
     },
     {
         // this second object adds extra properties: `createdAt` and `updatedAt`
