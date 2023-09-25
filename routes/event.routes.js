@@ -33,6 +33,7 @@ router.get("/events", (req, res, next) => {
     Event.find()
         .populate("members")
         .populate("groupId")
+        .populate("userId")
         .then((allEvents) => res.json(allEvents))
         .catch((err) => {
             console.log("Error getting list of events...", err);
@@ -46,6 +47,7 @@ router.get("/events", (req, res, next) => {
 //  GET /api/events/:eventId -  Retrieves a specific event by id
 router.get("/events/:eventId", (req, res, next) => {
     const { eventId } = req.params;
+    console.log(eventId);
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
         res.status(400).json({ message: "Specified id is not valid" });
@@ -55,8 +57,8 @@ router.get("/events/:eventId", (req, res, next) => {
     // Each Event document has a `tasks` array holding `_id`s of Task documents
     // We use .populate() method to get swap the `_id`s for the actual Task documents
     Event.findById(eventId)
-        .populate("members")
         .populate("groupId")
+        .populate("userId")
         .then((event) => res.json(event))
         .catch((err) => {
             console.log("...", err);
