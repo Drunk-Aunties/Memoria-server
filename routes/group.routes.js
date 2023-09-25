@@ -9,13 +9,13 @@ const { isGroupMember } = require("../middleware/isGroupMember");
 
 
 //  POST /api/gropus  -  Creates a new group
-router.post("/groups", fileUploader.single("imageUrl"), (req, res, next) => {
+router.post("/groups",isAuthenticated, fileUploader.single("imageUrl"), (req, res, next) => {
     const { name, description } = req.body;
 
     const newGroup = {
         name,
         description,
-        members: [],
+        members: [req.payload._id],
         imageUrl: req.file ? req.file.path : null,
     };
 
@@ -31,8 +31,8 @@ router.post("/groups", fileUploader.single("imageUrl"), (req, res, next) => {
 });
 
 // GET /api/groups -  Retrieves all of the groups
-router.get("/groups", (req, res, next) => {
-    Group.find()
+router.get("/groups", isAuthenticated, (req, res, next) => {
+    Group.find({members:`${req.payload._id}`})
         .populate("members")
         .then((allGroups) => res.json(allGroups))
         .catch((err) => {

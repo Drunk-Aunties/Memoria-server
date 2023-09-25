@@ -56,7 +56,7 @@ router.get("/events/:eventId", (req, res, next) => {
     // We use .populate() method to get swap the `_id`s for the actual Task documents
     Event.findById(eventId)
         .populate("members")
-        .populate("community")
+        .populate("groupId")
         .then((event) => res.json(event))
         .catch((err) => {
             console.log("...", err);

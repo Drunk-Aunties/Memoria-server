@@ -11,8 +11,7 @@ const groupSchema = new Schema(
         imageUrl: {
             type: String,
         },
-        members: [{ type: Schema.Types.ObjectId, ref: "User" }],
-        events: [{ type: Schema.Types.ObjectId, ref: "Event" }],
+        members: [{ type: Schema.Types.ObjectId, ref: "User" }]    
     },
     {
         timestamps: true,
