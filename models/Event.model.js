@@ -11,8 +11,8 @@ const eventSchema = new Schema(
         imageUrl: {
             type: String,
         },
-        members: [{ type: Schema.Types.ObjectId, ref: "User" }],
         groupId: { type: Schema.Types.ObjectId, ref: "Group" },
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
         date: String,
         comments: [String],
     },

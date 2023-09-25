@@ -6,15 +6,15 @@ const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
 
 //  POST /api/events  -  Creates a new event
-router.post("/events", (req, res, next) => {
+router.post("/events", isAuthenticated, (req, res, next) => {
     const { title, content, imageUrl,groupId } = req.body;
 
     const newEvent = {
         title,
         content,
-        members: [],
         imageUrl,
         groupId,
+        userId: req.payload._id
     };
 
     Event.create(newEvent)
