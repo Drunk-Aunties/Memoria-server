@@ -7,7 +7,7 @@ const Event = require("../models/Event.model");
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", (req, res, next) => {
-    const { title, content, imageUrl,groupId } = req.body;
+    const { title, content, imageUrl, groupId } = req.body;
 
     const newEvent = {
         title,
@@ -32,7 +32,7 @@ router.post("/events", (req, res, next) => {
 router.get("/events", (req, res, next) => {
     Event.find()
         .populate("members")
-        .populate("community")
+        .populate("groupId")
         .then((allEvents) => res.json(allEvents))
         .catch((err) => {
             console.log("Error getting list of events...", err);
@@ -133,7 +133,7 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
 
 // GET /api/groups/:groupsId/events -  Retrieves all of the events
 router.get("/groups/:groupId/events", (req, res, next) => {
-    Event.find({groupId: req.params.groupId})
+    Event.find({ groupId: req.params.groupId })
         .then((allEvents) => res.json(allEvents))
         .catch((err) => {
             console.log("Error getting list of events...", err);
