@@ -134,6 +134,7 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
 // GET /api/groups/:groupsId/events -  Retrieves all of the events
 router.get("/groups/:groupId/events", (req, res, next) => {
     Event.find({ groupId: req.params.groupId })
+        .sort({createdAt: -1})
         .populate("userId")
         .then((allEvents) => res.json(allEvents))
         .catch((err) => {
