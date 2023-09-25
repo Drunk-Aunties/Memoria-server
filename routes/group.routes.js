@@ -6,17 +6,15 @@ const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
 const { isGroupMember } = require("../middleware/isGroupMember");
 
-
-
 //  POST /api/gropus  -  Creates a new group
-router.post("/groups",isAuthenticated, fileUploader.single("imageUrl"), (req, res, next) => {
-    const { name, description } = req.body;
+router.post("/groups", (req, res, next) => {
+    const { name, description, imageUrl } = req.body;
 
     const newGroup = {
         name,
         description,
-        members: [req.payload._id],
-        imageUrl: req.file ? req.file.path : null,
+        members: [],
+        imageUrl,
     };
 
     Group.create(newGroup)
@@ -32,7 +30,7 @@ router.post("/groups",isAuthenticated, fileUploader.single("imageUrl"), (req, re
 
 // GET /api/groups -  Retrieves all of the groups
 router.get("/groups", isAuthenticated, (req, res, next) => {
-    Group.find({members:`${req.payload._id}`})
+    Group.find({ members: `${req.payload._id}` })
         .populate("members")
         .then((allGroups) => res.json(allGroups))
         .catch((err) => {
@@ -52,7 +50,6 @@ router.get("/groups/:groupId", isAuthenticated, (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(groupId)) {
         res.status(400).json({ message: "Specified id is not valid" });
         return;
-        
     }
 
     // Each Group document has a `tasks` array holding `_id`s of Task documents
@@ -61,12 +58,22 @@ router.get("/groups/:groupId", isAuthenticated, (req, res, next) => {
         .populate("members")
         .then((group) => {
             //console.log(group.members);
-            console.log(group.members.find((element) => element.email === req.payload.email))
-            if (group.members.find((element) => element.email === req.payload.email))
-            {res.json(group)}
-            else {res.status(401).json({
-                message: "You are not a member of this group",
-            });}
+            console.log(
+                group.members.find(
+                    (element) => element.email === req.payload.email
+                )
+            );
+            if (
+                group.members.find(
+                    (element) => element.email === req.payload.email
+                )
+            ) {
+                res.json(group);
+            } else {
+                res.status(401).json({
+                    message: "You are not a member of this group",
+                });
+            }
         })
 
         .catch((err) => {
@@ -126,6 +133,20 @@ router.delete("/groups/:groupId", (req, res, next) => {
                 error: err,
             });
         });
+});
+// POST "/api/upload" => Route that receives the image, sends it to Cloudinary via the fileUploader and returns the image URL
+router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
+    // console.log("file is: ", req.file)
+
+    if (!req.file) {
+        next(new Error("No file uploaded!"));
+        return;
+    }
+
+    // Get the URL of the uploaded file and send it as a response.
+    // 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
+
+    res.json({ fileUrl: req.file.path });
 });
 
 module.exports = router;
