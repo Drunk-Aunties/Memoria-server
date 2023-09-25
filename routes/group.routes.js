@@ -7,13 +7,13 @@ const Event = require("../models/Event.model");
 const { isGroupMember } = require("../middleware/isGroupMember");
 
 //  POST /api/gropus  -  Creates a new group
-router.post("/groups", (req, res, next) => {
+router.post("/groups", isAuthenticated, (req, res, next) => {
     const { name, description, imageUrl } = req.body;
 
     const newGroup = {
         name,
         description,
-        members: [],
+        members: [req.payload._id],
         imageUrl,
     };
 
