@@ -5,7 +5,7 @@ const fileUploader = require("../config/cloudinary.config");
 const User = require("../models/User.model");
 
 // GET /api/user -  Retrieves a specific user
-router.get("/user/:useremail", async (req, res, next) => {
+router.get("/users/email/:useremail", async (req, res, next) => {
     let result = await User.findOne({ email: req.params.useremail });
     res.json(result);
 });
@@ -20,7 +20,7 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
 });
 
 //  GET /api/users/:userId -  Retrieves a specific user by id
-router.get("/users/:userId", (req, res, next) => {
+router.get("/users/id/:userId", (req, res, next) => {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
