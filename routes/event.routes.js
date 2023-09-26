@@ -7,14 +7,14 @@ const Event = require("../models/Event.model");
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", isAuthenticated, (req, res, next) => {
-    const { title, content, imageUrl,groupId } = req.body;
+    const { title, content, imageUrl, groupId } = req.body;
 
     const newEvent = {
         title,
         content,
         imageUrl,
         groupId,
-        userId: req.payload._id
+        userId: req.payload._id,
     };
 
     Event.create(newEvent)
@@ -82,6 +82,7 @@ router.put("/events/:eventId", (req, res, next) => {
         title: req.body.title,
         content: req.body.content,
         members: req.body.members,
+        imageUrl: req.body.imageUrl,
     };
 
     Event.findByIdAndUpdate(eventId, newDetails, { new: true })
@@ -136,7 +137,7 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
 // GET /api/groups/:groupsId/events -  Retrieves all of the events
 router.get("/groups/:groupId/events", (req, res, next) => {
     Event.find({ groupId: req.params.groupId })
-        .sort({createdAt: -1})
+        .sort({ createdAt: -1 })
         .populate("userId")
         .then((allEvents) => res.json(allEvents))
         .catch((err) => {
