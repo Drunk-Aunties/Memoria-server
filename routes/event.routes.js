@@ -15,6 +15,7 @@ router.post("/events", isAuthenticated, (req, res, next) => {
         imageUrl,
         groupId,
         userId: req.payload._id,
+        favorite: false,
     };
 
     Event.create(newEvent)
@@ -83,6 +84,7 @@ router.put("/events/:eventId", (req, res, next) => {
         content: req.body.content,
         members: req.body.members,
         imageUrl: req.body.imageUrl,
+        favorite: req.body.favorite,
     };
 
     Event.findByIdAndUpdate(eventId, newDetails, { new: true })
