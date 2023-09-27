@@ -15,7 +15,12 @@ const eventSchema = new Schema(
         groupId: { type: Schema.Types.ObjectId, ref: "Group" },
         userId: { type: Schema.Types.ObjectId, ref: "User" },
         date: String,
-        comments: [String],
+        comments: [
+            {
+                text: String,
+                owner: String,
+            },
+        ],
     },
     {
         timestamps: true,

@@ -57,12 +57,6 @@ router.get("/groups/:groupId", isAuthenticated, (req, res, next) => {
     Group.findById(groupId)
         .populate("members")
         .then((group) => {
-            //console.log(group.members);
-            console.log(
-                group.members.find(
-                    (element) => element.email === req.payload.email
-                )
-            );
             if (
                 group.members.find(
                     (element) => element.email === req.payload.email

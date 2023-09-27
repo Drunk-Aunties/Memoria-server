@@ -4,10 +4,42 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 const fileUploader = require("../config/cloudinary.config");
 const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+router.get("/events/story", async (req, res, next) => {
+    try {
+        const allEvents = await Event.find()
+            .populate("groupId")
+            .populate("userId");
+        const userMessage = {
+            role: "user",
+            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${JSON.stringify(
+                allEvents
+            )}. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
+        };
+        const chatCompletion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [userMessage],
+            max_tokens: 250,
+        });
+        const response = chatCompletion.choices[0].message.content;
+        res.json(response);
+    } catch (error) {
+        console.error("Error in /chat route:", error);
+        res.status(500).json({
+            message: "Error getting list of events",
+            error: err,
+        });
+    }
+});
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", isAuthenticated, (req, res, next) => {
-    const { title, content, imageUrl, groupId } = req.body;
+    const { title, content, imageUrl, groupId, comments } = req.body;
 
     const newEvent = {
         title,
@@ -16,6 +48,7 @@ router.post("/events", isAuthenticated, (req, res, next) => {
         groupId,
         userId: req.payload._id,
         favorite: false,
+        comments,
     };
 
     Event.create(newEvent)
@@ -32,7 +65,6 @@ router.post("/events", isAuthenticated, (req, res, next) => {
 // GET /api/events -  Retrieves all of the events
 router.get("/events", (req, res, next) => {
     Event.find()
-        .populate("members")
         .populate("groupId")
         .populate("userId")
         .then((allEvents) => res.json(allEvents))
@@ -48,7 +80,6 @@ router.get("/events", (req, res, next) => {
 //  GET /api/events/:eventId -  Retrieves a specific event by id
 router.get("/events/:eventId", (req, res, next) => {
     const { eventId } = req.params;
-    console.log(eventId);
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
         res.status(400).json({ message: "Specified id is not valid" });
@@ -71,7 +102,7 @@ router.get("/events/:eventId", (req, res, next) => {
 });
 
 // PUT  /api/events/:eventId  -  Updates a specific event by id
-router.put("/events/:eventId", (req, res, next) => {
+router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
     const { eventId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
@@ -82,12 +113,25 @@ router.put("/events/:eventId", (req, res, next) => {
     const newDetails = {
         title: req.body.title,
         content: req.body.content,
-        members: req.body.members,
         imageUrl: req.body.imageUrl,
         favorite: req.body.favorite,
     };
+    const newComment = {
+        text: req.body.comments,
+        owner: req.payload.name,
+    };
+    let combinedUpdate;
 
-    Event.findByIdAndUpdate(eventId, newDetails, { new: true })
+    if (req.body.comments) {
+        combinedUpdate = {
+            $push: { comments: newComment },
+            ...newDetails,
+        };
+    } else {
+        combinedUpdate = newDetails;
+    }
+
+    Event.findByIdAndUpdate(eventId, combinedUpdate, { new: true })
         .then((updatedEvent) => res.json(updatedEvent))
         .catch((err) => {
             console.log("Error updating event", err);
