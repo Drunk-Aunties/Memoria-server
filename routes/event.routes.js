@@ -15,7 +15,6 @@ router.get("/events/story", async (req, res, next) => {
         const allEvents = await Event.find()
             .populate("groupId")
             .populate("userId");
-        console.log(allEvents);
         const userMessage = {
             role: "user",
             content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${JSON.stringify(
