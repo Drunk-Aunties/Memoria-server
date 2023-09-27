@@ -4,6 +4,39 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 const fileUploader = require("../config/cloudinary.config");
 const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+router.get("/events/story", async (req, res, next) => {
+    try {
+        const allEvents = await Event.find()
+            .populate("groupId")
+            .populate("userId");
+        console.log(allEvents);
+        const userMessage = {
+            role: "user",
+            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${JSON.stringify(
+                allEvents
+            )}. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
+        };
+        const chatCompletion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [userMessage],
+            max_tokens: 250,
+        });
+        const response = chatCompletion.choices[0].message.content;
+        res.json(response);
+    } catch (error) {
+        console.error("Error in /chat route:", error);
+        res.status(500).json({
+            message: "Error getting list of events",
+            error: err,
+        });
+    }
+});
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", isAuthenticated, (req, res, next) => {
@@ -32,7 +65,6 @@ router.post("/events", isAuthenticated, (req, res, next) => {
 // GET /api/events -  Retrieves all of the events
 router.get("/events", (req, res, next) => {
     Event.find()
-        .populate("members")
         .populate("groupId")
         .populate("userId")
         .then((allEvents) => res.json(allEvents))
