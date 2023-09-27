@@ -80,7 +80,6 @@ router.get("/events", (req, res, next) => {
 //  GET /api/events/:eventId -  Retrieves a specific event by id
 router.get("/events/:eventId", (req, res, next) => {
     const { eventId } = req.params;
-    console.log(eventId);
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
         res.status(400).json({ message: "Specified id is not valid" });
@@ -103,7 +102,8 @@ router.get("/events/:eventId", (req, res, next) => {
 });
 
 // PUT  /api/events/:eventId  -  Updates a specific event by id
-router.put("/events/:eventId", (req, res, next) => {
+router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
+    console.log(req.payload);
     const { eventId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
@@ -117,9 +117,13 @@ router.put("/events/:eventId", (req, res, next) => {
         imageUrl: req.body.imageUrl,
         favorite: req.body.favorite,
     };
+    const newComment = {
+        text: req.body.comments,
+        owner: req.payload.name,
+    };
 
     const combinedUpdate = {
-        $push: { comments: req.body.comments },
+        $push: { comments: newComment },
         ...newDetails,
     };
 
