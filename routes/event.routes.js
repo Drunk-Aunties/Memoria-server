@@ -39,7 +39,7 @@ router.get("/events/story", async (req, res, next) => {
 
 //  POST /api/events  -  Creates a new event
 router.post("/events", isAuthenticated, (req, res, next) => {
-    const { title, content, imageUrl, groupId } = req.body;
+    const { title, content, imageUrl, groupId, comments } = req.body;
 
     const newEvent = {
         title,
@@ -48,6 +48,7 @@ router.post("/events", isAuthenticated, (req, res, next) => {
         groupId,
         userId: req.payload._id,
         favorite: false,
+        comments,
     };
 
     Event.create(newEvent)
@@ -113,12 +114,16 @@ router.put("/events/:eventId", (req, res, next) => {
     const newDetails = {
         title: req.body.title,
         content: req.body.content,
-        members: req.body.members,
         imageUrl: req.body.imageUrl,
         favorite: req.body.favorite,
     };
 
-    Event.findByIdAndUpdate(eventId, newDetails, { new: true })
+    const combinedUpdate = {
+        $push: { comments: req.body.comments },
+        ...newDetails,
+    };
+
+    Event.findByIdAndUpdate(eventId, combinedUpdate, { new: true })
         .then((updatedEvent) => res.json(updatedEvent))
         .catch((err) => {
             console.log("Error updating event", err);
