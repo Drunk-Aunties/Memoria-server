@@ -103,7 +103,6 @@ router.get("/events/:eventId", (req, res, next) => {
 
 // PUT  /api/events/:eventId  -  Updates a specific event by id
 router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
-    console.log(req.payload);
     const { eventId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
@@ -121,11 +120,16 @@ router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
         text: req.body.comments,
         owner: req.payload.name,
     };
+    let combinedUpdate;
 
-    const combinedUpdate = {
-        $push: { comments: newComment },
-        ...newDetails,
-    };
+    if (req.body.comments) {
+        combinedUpdate = {
+            $push: { comments: newComment },
+            ...newDetails,
+        };
+    } else {
+        combinedUpdate = newDetails;
+    }
 
     Event.findByIdAndUpdate(eventId, combinedUpdate, { new: true })
         .then((updatedEvent) => res.json(updatedEvent))
