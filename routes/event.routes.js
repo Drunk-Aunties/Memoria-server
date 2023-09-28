@@ -120,6 +120,7 @@ router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
         text: req.body.comments,
         owner: req.payload.name,
     };
+
     let combinedUpdate;
 
     if (req.body.comments) {
@@ -132,6 +133,21 @@ router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
     }
 
     Event.findByIdAndUpdate(eventId, combinedUpdate, { new: true })
+        .then((event) => {
+            if (!event) {
+                return res.status(404).json({ message: "Event not found" });
+            }
+            const alreadyFavorited = event.favoritedBy.includes(
+                req.payload._id
+            );
+
+            if (alreadyFavorited) {
+                event.favoritedBy.pull(req.payload._id);
+            } else {
+                event.favoritedBy.push(req.payload._id);
+            }
+            return event.save();
+        })
         .then((updatedEvent) => res.json(updatedEvent))
         .catch((err) => {
             console.log("Error updating event", err);
