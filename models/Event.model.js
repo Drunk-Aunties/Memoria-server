@@ -11,7 +11,15 @@ const eventSchema = new Schema(
         imageUrl: {
             type: String,
         },
-        favorite: Boolean,
+        favorite: {
+            type: Boolean,
+            default: false,
+        },
+        favoritedBy: [
+            {
+                owner: String,
+            },
+        ],
         groupId: { type: Schema.Types.ObjectId, ref: "Group" },
         userId: { type: Schema.Types.ObjectId, ref: "User" },
         date: String,
