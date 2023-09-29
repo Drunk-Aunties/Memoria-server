@@ -148,47 +148,49 @@ router.get("/groups/:groupId/newspaper", isAuthenticated, async (req, res, next)
     let group = await Group.findById(groupId).populate("members");
     let memories = await Event.find({ groupId: groupId }).populate("userId").limit(10);
     let lightMemories = memories.map((e) => {
-        return {prompt:'Person : ' + e.userId.name + ' - Title: ' + e.title + ' - Content:' + e.content,
-    _id: e._id }
+        return {
+            prompt: 'Person : ' + e.userId.name + ' - Title: ' + e.title + ' - Content:' + e.content,
+            _id: e._id,
+            gptComment: e.gptComment
+        }
     })
 
     lightMemories.forEach(async (memory) => {
         try {
-        if(memory.gptComment === false
-            
-            ) {
-            console.log("calling BFF GPT");
-        let userMessage = {
-            role: 'user',
-            content: "Hi, can you please write a small newspaper article of 100 words about this event:" + memory.prompt
-        };
+            if (!memory.gptComment) {
+                console.log("calling BFF GPT");
+                let userMessage = {
+                    role: 'user',
+                    content: "Hi, can you please write a small newspaper article of 100 words about this event:" + memory.prompt
+                };
 
-        const chatCompletion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [userMessage],
-            max_tokens: 250,
-        })
+                const chatCompletion = await openai.chat.completions.create({
+                    model: "gpt-3.5-turbo",
+                    messages: [userMessage],
+                    max_tokens: 250,
+                })
 
-        console.log(chatCompletion.choices[0].message.content)
-        
-        ;
+                console.log(chatCompletion.choices[0].message.content)
 
-        let result = await Event.findByIdAndUpdate(memory._id, {gptComment : chatCompletion.choices[0].message.content});
+                    ;
 
-        console.log(result)
+                let result = await Event.findByIdAndUpdate(memory._id, { gptComment: chatCompletion.choices[0].message.content });
 
-    }}
-    catch (error) {console.log(error)}
-    
+                console.log(result)
+
+            }
+        }
+        catch (error) { console.log(error) }
+
     })
 
     memories = await Event.find({ groupId: groupId }).populate("userId").limit(10);
     res.json({
         memories: memories,
-        group : group
+        group: group
 
     })
-    
+
 
 
 
