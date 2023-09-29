@@ -10,16 +10,24 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-router.get("/events/story", async (req, res, next) => {
+router.get("/events/story/:groupId", async (req, res, next) => {
+    const { groupId } = req.params;
     try {
-        const allEvents = await Event.find()
-            .populate("groupId")
+        const allEvents = await Event.find({ groupId: groupId }).limit(10)
             .populate("userId");
+            console.log(allEvents);
+
+        
+        let lightMemories = allEvents.map((e) => {
+            return 'Person : ' + e.userId.name + ' - Title: ' + e.title + ' - Content:' + e.content
+
+        }
+        )
+        console.log(lightMemories);
         const userMessage = {
             role: "user",
-            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${JSON.stringify(
-                allEvents
-            )}. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
+            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${lightMemories
+            }. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
         };
         const chatCompletion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
