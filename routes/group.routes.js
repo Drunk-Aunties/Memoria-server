@@ -5,6 +5,13 @@ const fileUploader = require("../config/cloudinary.config");
 const Group = require("../models/Group.model");
 const Event = require("../models/Event.model");
 const { isGroupMember } = require("../middleware/isGroupMember");
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+
 
 //  POST /api/gropus  -  Creates a new group
 router.post("/groups", isAuthenticated, (req, res, next) => {
@@ -128,6 +135,67 @@ router.delete("/groups/:groupId", (req, res, next) => {
             });
         });
 });
+
+//  GET /api/groups/:groupId -  Retrieves a specific group by id
+router.get("/groups/:groupId/newspaper", isAuthenticated, async (req, res, next) => {
+    const { groupId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+        res.status(400).json({ message: "Specified id is not valid" });
+        return;
+    }
+
+    let group = await Group.findById(groupId).populate("members");
+    let memories = await Event.find({ groupId: groupId }).populate("userId").limit(10);
+    let lightMemories = memories.map((e) => {
+        return {prompt:'Person : ' + e.userId.name + ' - Title: ' + e.title + ' - Content:' + e.content,
+    _id: e._id }
+    })
+
+    lightMemories.forEach(async (memory) => {
+        try {
+        if(memory.gptComment === false
+            
+            ) {
+            console.log("calling BFF GPT");
+        let userMessage = {
+            role: 'user',
+            content: "Hi, can you please write a small newspaper article of 100 words about this event:" + memory.prompt
+        };
+
+        const chatCompletion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [userMessage],
+            max_tokens: 250,
+        })
+
+        console.log(chatCompletion.choices[0].message.content)
+        
+        ;
+
+        let result = await Event.findByIdAndUpdate(memory._id, {gptComment : chatCompletion.choices[0].message.content});
+
+        console.log(result)
+
+    }}
+    catch (error) {console.log(error)}
+    
+    })
+
+    memories = await Event.find({ groupId: groupId }).populate("userId").limit(10);
+    res.json({
+        memories: memories,
+        group : group
+
+    })
+    
+
+
+
+
+
+});
+
 // POST "/api/upload" => Route that receives the image, sends it to Cloudinary via the fileUploader and returns the image URL
 router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
     // console.log("file is: ", req.file)

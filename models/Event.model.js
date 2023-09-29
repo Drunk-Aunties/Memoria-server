@@ -21,6 +21,7 @@ const eventSchema = new Schema(
                 owner: String,
             },
         ],
+        gptComment : String
     },
     {
         timestamps: true,
