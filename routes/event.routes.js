@@ -13,21 +13,23 @@ const openai = new OpenAI({
 router.get("/events/story/:groupId", async (req, res, next) => {
     const { groupId } = req.params;
     try {
-        const allEvents = await Event.find({ groupId: groupId }).limit(10)
+        const allEvents = await Event.find({ groupId: groupId })
+            .limit(10)
             .populate("userId");
-            console.log(allEvents);
 
-        
         let lightMemories = allEvents.map((e) => {
-            return 'Person : ' + e.userId.name + ' - Title: ' + e.title + ' - Content:' + e.content
-
-        }
-        )
-        console.log(lightMemories);
+            return (
+                "Person : " +
+                e.userId.name +
+                " - Title: " +
+                e.title +
+                " - Content:" +
+                e.content
+            );
+        });
         const userMessage = {
             role: "user",
-            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${lightMemories
-            }. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
+            content: `Hi, I will ask you a question, please answer like a taleteller. These are my groups data, ${lightMemories}. Can you write me a story from these informations for me but you should explain it by using only 100 words.`,
         };
         const chatCompletion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
@@ -192,15 +194,12 @@ router.delete("/events/:eventId", (req, res, next) => {
 // POST "/api/upload" => Route that receives the image, sends it to Cloudinary via the fileUploader and returns the image URL
 router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
     // console.log("file is: ", req.file)
-
     if (!req.file) {
         next(new Error("No file uploaded!"));
         return;
     }
-
     // Get the URL of the uploaded file and send it as a response.
     // 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
-
     res.json({ fileUrl: req.file.path });
 });
 
